@@ -25,12 +25,12 @@ while True:
         # we're ensuring that if we get some strange strings on one line, the 2nd one won't be affected
 		setText_norefresh("Temp:" + t + "C\n" + "Humidity :" + h + "%")
 		
-        if (t>20):
-            print ("Hot")
-	        setRGB(255,0,0)
-	    else:
-            print ("Cold")
-            setRGB(0,0,255)
+        	if (temp > 20):
+            		print ("Hot")
+	        	setRGB(255,0,0)
+	   	 else:
+           		 print ("Cold")
+            		setRGB(0,0,255)
 	
 
 	# except (IOError, TypeError) as e:
