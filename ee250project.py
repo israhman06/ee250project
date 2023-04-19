@@ -1,23 +1,46 @@
-import time
-import RPi.GPIO as GPIO
-import Adafruit_GPIO.SPI as SPI
-import Adafruit_MCP3008
-import sys
-import grovepi
+from grovepi import *
 from grove_rgb_lcd import *
+from time import sleep
+from math import isnan
 
+dht_sensor_port = 7 # connect the DHt sensor to port 7
+dht_sensor_type = 0 # use 0 for the blue-colored sensor and 1 for the white-colored sensor
 
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BOARD)
-SPI_PORT=0
-SPI_DEVICE = 0
+# set green as backlight color
+# we need to do it just once
+# setting the backlight color once reduces the amount of data transfer over the I2C line
+setRGB(0,255,0)
 
-#mcp = Adafruit_MCP3008.MCP3008(spi = SPI.SpiDev(SPI_PORT, SPI_DEVICE))
+while True:
+	try:
+        # get the temperature and Humidity from the DHT sensor
+		[ temp,hum ] = dht(dht_sensor_port,dht_sensor_type)
+		print("temp =", temp, "C\thumidity =", hum,"%")
 
-temperaturePin = 0 #Temp sensor connected to A0
-   
-if __name__ == '__main__':
-	while (True):
-		temperatureVal = grovepi.temp(temperaturePin)
-		print("temp =", temperatureVal)
-        time.sleep(.5)
+		# check if we have nans
+		# if so, then raise a type error exception
+		if isnan(temp) is True or isnan(hum) is True:
+			raise TypeError('nan error')
+
+		t = str(temp)
+		h = str(hum)
+
+        # instead of inserting a bunch of whitespace, we can just insert a \n
+        # we're ensuring that if we get some strange strings on one line, the 2nd one won't be affected
+		setText_norefresh("Temp:" + t + "C\n" + "Humidity :" + h + "%")
+
+	except (IOError, TypeError) as e:
+		print(str(e))
+		# and since we got a type error
+		# then reset the LCD's text
+		setText("")
+
+	except KeyboardInterrupt as e:
+		print(str(e))
+		# since we're exiting the program
+		# it's better to leave the LCD with a blank text
+		setText("")
+		break
+
+	# wait some time before re-updating the LCD
+	sleep(0.05)
